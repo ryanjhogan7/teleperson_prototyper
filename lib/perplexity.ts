@@ -10,6 +10,11 @@ export interface CompanyResearch {
 }
 
 export async function researchCompanyAndGeneratePrompt(url: string): Promise<CompanyResearch> {
+  // Check if API key is configured
+  if (!process.env.PERPLEXITY_API_KEY || process.env.PERPLEXITY_API_KEY === 'your_perplexity_api_key_here') {
+    throw new Error('PERPLEXITY_API_KEY is not configured. Please add it to your .env file.');
+  }
+
   const res = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
@@ -51,10 +56,25 @@ Fill in all placeholders with actual information from your research. For brandTo
 
   if (!res.ok) {
     const error = await res.text();
-    throw new Error(`Perplexity API error: ${error}`);
+    console.error('Perplexity API HTTP error:', res.status, error);
+
+    if (res.status === 401) {
+      throw new Error('Invalid Perplexity API key. Please check your PERPLEXITY_API_KEY in .env file.');
+    } else if (res.status === 429) {
+      throw new Error('Perplexity API rate limit exceeded. Please try again later.');
+    }
+
+    throw new Error(`Perplexity API error (${res.status}): ${error}`);
   }
 
   const data = await res.json();
+
+  // Check if the response has the expected structure
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    console.error('Unexpected Perplexity response structure:', JSON.stringify(data).substring(0, 300));
+    throw new Error('Unexpected response structure from Perplexity API');
+  }
+
   const content = data.choices[0].message.content;
 
   console.log('Raw Perplexity response length:', content.length, 'chars');
@@ -62,6 +82,20 @@ Fill in all placeholders with actual information from your research. For brandTo
 
   // Try to extract JSON from the response
   let jsonContent = content.trim();
+
+  // Check if the response is a refusal or error message BEFORE attempting to extract JSON
+  const lowerContent = jsonContent.toLowerCase();
+  if (lowerContent.includes("i can't") ||
+      lowerContent.includes("i cannot") ||
+      lowerContent.includes("i'm unable") ||
+      lowerContent.includes("i am unable") ||
+      lowerContent.includes("unable to") ||
+      lowerContent.includes("sorry") && lowerContent.includes("can't") ||
+      lowerContent.includes("don't have access") ||
+      lowerContent.includes("cannot access")) {
+    console.error('Perplexity returned a refusal or error:', jsonContent.substring(0, 300));
+    throw new Error(`Perplexity API refused the request. This usually means: 1) Invalid/inaccessible URL, 2) API key issue, or 3) Rate limit. Response: ${jsonContent.substring(0, 200)}`);
+  }
 
   // Remove markdown code blocks if present
   if (jsonContent.includes('```')) {
@@ -76,16 +110,11 @@ Fill in all placeholders with actual information from your research. For brandTo
     const jsonMatch = jsonContent.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       jsonContent = jsonMatch[0];
+    } else {
+      // No JSON found in the response
+      console.error('No JSON object found in response:', jsonContent.substring(0, 300));
+      throw new Error(`No JSON found in Perplexity response. Response: ${jsonContent.substring(0, 200)}`);
     }
-  }
-
-  // Check if the response is a refusal or error message
-  if (jsonContent.toLowerCase().includes("i can't") ||
-      jsonContent.toLowerCase().includes("i cannot") ||
-      jsonContent.toLowerCase().includes("unable to") ||
-      (!jsonContent.startsWith('{') && jsonContent.length < 500)) {
-    console.error('Perplexity returned a refusal or error:', jsonContent);
-    throw new Error(`Perplexity API could not process the request: ${jsonContent.substring(0, 200)}`);
   }
 
   try {
@@ -93,12 +122,19 @@ Fill in all placeholders with actual information from your research. For brandTo
 
     // Validate required fields
     if (!parsed.companyName || !parsed.industry || !parsed.langfusePrompt) {
-      throw new Error('Missing required fields in response');
+      console.error('Missing required fields. Got:', Object.keys(parsed));
+      throw new Error(`Missing required fields in Perplexity response. Expected: companyName, industry, langfusePrompt. Got: ${Object.keys(parsed).join(', ')}`);
     }
 
     return parsed;
   } catch (parseError) {
-    console.error('Failed to parse Perplexity response:', jsonContent.substring(0, 200));
-    throw new Error(`Failed to parse Perplexity response: ${parseError}. Response preview: ${jsonContent.substring(0, 100)}...`);
+    console.error('Failed to parse Perplexity response:', jsonContent.substring(0, 500));
+
+    // If it's a JSON parse error, provide more helpful info
+    if (parseError instanceof SyntaxError) {
+      throw new Error(`Invalid JSON from Perplexity API. The API may have returned an error message instead of JSON. Check your API key and URL. Error: ${parseError.message}. Response: ${jsonContent.substring(0, 200)}`);
+    }
+
+    throw new Error(`Failed to process Perplexity response: ${parseError}. Response preview: ${jsonContent.substring(0, 200)}`);
   }
 }
