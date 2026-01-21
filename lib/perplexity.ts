@@ -15,6 +15,15 @@ export async function researchCompanyAndGeneratePrompt(url: string): Promise<Com
     throw new Error('PERPLEXITY_API_KEY is not configured. Please add it to your .env file.');
   }
 
+  // Extract domain from URL for better searchability
+  let domain: string;
+  try {
+    const urlObj = new URL(url);
+    domain = urlObj.hostname.replace('www.', '');
+  } catch {
+    domain = url;
+  }
+
   const res = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
@@ -22,7 +31,9 @@ export async function researchCompanyAndGeneratePrompt(url: string): Promise<Com
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'sonar-pro',
+      model: 'sonar',
+      return_citations: false,
+      return_related_questions: false,
       messages: [
         {
           role: 'system',
@@ -30,9 +41,7 @@ export async function researchCompanyAndGeneratePrompt(url: string): Promise<Com
         },
         {
           role: 'user',
-          content: `Research the company at this URL: ${url}
-
-Based on your research, generate a JSON object with the following structure. The "langfusePrompt" field should contain a complete customer service chatbot system prompt.
+          content: `Search for information about the company at ${domain} (${url}). Based on your research, generate a JSON object with the following structure. The "langfusePrompt" field should contain a complete customer service chatbot system prompt.
 
 CRITICAL: Respond ONLY with the JSON object below. No markdown, no explanations, no code blocks - just raw JSON:
 
