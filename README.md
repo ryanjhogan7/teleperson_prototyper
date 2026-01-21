@@ -7,7 +7,7 @@ A simple web app that generates demo versions of customer websites with a Telepe
 - **Automated Research**: Uses Perplexity AI to research any company website
 - **AI-Generated Prompts**: Creates custom chatbot prompts tailored to each company
 - **Instant Prototypes**: Generates branded demo websites with embedded chat widgets
-- **Smart Chat**: AI-powered chatbot using OpenAI that understands each company's unique context
+- **Smart Chat**: AI-powered chatbot using Perplexity AI that understands each company's unique context
 
 ## How It Works
 
@@ -22,9 +22,8 @@ A simple web app that generates demo versions of customer websites with a Telepe
 - **Frontend**: Next.js 15 + React + Tailwind CSS
 - **Backend**: Next.js API Routes
 - **APIs**:
-  - Perplexity API (company research + prompt generation)
+  - Perplexity API (company research + prompt generation + chat responses)
   - Langfuse API (prompt storage and retrieval)
-  - OpenAI API (chat responses)
 
 ## Project Structure
 
@@ -54,7 +53,6 @@ A simple web app that generates demo versions of customer websites with a Telepe
 You'll need API keys for:
 - Perplexity AI
 - Langfuse
-- OpenAI
 
 ### Installation
 
@@ -77,7 +75,6 @@ Copy `.env.example` to `.env.local` and fill in your API keys:
 PERPLEXITY_API_KEY=your_perplexity_api_key
 LANGFUSE_PUBLIC_KEY=your_langfuse_public_key
 LANGFUSE_SECRET_KEY=your_langfuse_secret_key
-OPENAI_API_KEY=your_openai_api_key
 ```
 
 4. Run the development server:
