@@ -21,7 +21,7 @@ export async function researchCompanyAndGeneratePrompt(url: string): Promise<Com
       messages: [
         {
           role: 'system',
-          content: 'You are a JSON data extraction assistant. You MUST respond ONLY with valid JSON. Never include explanations, markdown formatting, or any text outside the JSON object.'
+          content: 'You are a JSON data extraction assistant. You MUST respond ONLY with valid JSON. Never include explanations, markdown formatting, code blocks, or any text outside the JSON object. Do not start your response with "I" or any conversational text. Begin your response directly with the opening brace { of the JSON object.'
         },
         {
           role: 'user',
@@ -57,6 +57,9 @@ Fill in all placeholders with actual information from your research. For brandTo
   const data = await res.json();
   const content = data.choices[0].message.content;
 
+  console.log('Raw Perplexity response length:', content.length, 'chars');
+  console.log('Response preview:', content.substring(0, 150));
+
   // Try to extract JSON from the response
   let jsonContent = content.trim();
 
@@ -74,6 +77,15 @@ Fill in all placeholders with actual information from your research. For brandTo
     if (jsonMatch) {
       jsonContent = jsonMatch[0];
     }
+  }
+
+  // Check if the response is a refusal or error message
+  if (jsonContent.toLowerCase().includes("i can't") ||
+      jsonContent.toLowerCase().includes("i cannot") ||
+      jsonContent.toLowerCase().includes("unable to") ||
+      (!jsonContent.startsWith('{') && jsonContent.length < 500)) {
+    console.error('Perplexity returned a refusal or error:', jsonContent);
+    throw new Error(`Perplexity API could not process the request: ${jsonContent.substring(0, 200)}`);
   }
 
   try {
