@@ -133,7 +133,7 @@ export function generatePrototypeHTML(data: PrototypeData): string {
       text-align: center;
       padding: 8px;
       font-size: 12px;
-      color: #6b7280;
+      color: #000000;
       border-top: 1px solid #e5e7eb;
     }
     .typing-indicator {
