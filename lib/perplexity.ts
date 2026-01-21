@@ -12,7 +12,7 @@ export interface CompanyResearch {
 export async function researchCompanyAndGeneratePrompt(url: string): Promise<CompanyResearch> {
   // Check if API key is configured
   if (!process.env.PERPLEXITY_API_KEY || process.env.PERPLEXITY_API_KEY === 'your_perplexity_api_key_here') {
-    throw new Error('PERPLEXITY_API_KEY is not configured. Please add it to your .env file.');
+    throw new Error('PERPLEXITY_API_KEY is not configured. Please add it in Vercel Dashboard → Settings → Environment Variables, then redeploy. Get your API key from https://www.perplexity.ai/settings/api');
   }
 
   // Extract domain from URL for better searchability
@@ -68,7 +68,7 @@ Fill in all placeholders with actual information from your research. For brandTo
     console.error('Perplexity API HTTP error:', res.status, error);
 
     if (res.status === 401) {
-      throw new Error('Invalid Perplexity API key. Please check your PERPLEXITY_API_KEY in .env file.');
+      throw new Error('Invalid Perplexity API key. Please check your PERPLEXITY_API_KEY in Vercel Dashboard → Settings → Environment Variables, then redeploy. Get a new key from https://www.perplexity.ai/settings/api');
     } else if (res.status === 429) {
       throw new Error('Perplexity API rate limit exceeded. Please try again later.');
     }
@@ -141,7 +141,7 @@ Fill in all placeholders with actual information from your research. For brandTo
 
     // If it's a JSON parse error, provide more helpful info
     if (parseError instanceof SyntaxError) {
-      throw new Error(`Invalid JSON from Perplexity API. The API may have returned an error message instead of JSON. Check your API key and URL. Error: ${parseError.message}. Response: ${jsonContent.substring(0, 200)}`);
+      throw new Error(`Invalid JSON from Perplexity API. The API may have returned an error message instead of JSON. Check your PERPLEXITY_API_KEY in Vercel environment variables and ensure the URL is accessible. Error: ${parseError.message}. Response: ${jsonContent.substring(0, 200)}`);
     }
 
     throw new Error(`Failed to process Perplexity response: ${parseError}. Response preview: ${jsonContent.substring(0, 200)}`);
