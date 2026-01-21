@@ -2,6 +2,12 @@
 
 A simple web app that generates demo versions of customer websites with a Teleperson chat/voice bot embedded. This tool helps show prospects what the Teleperson product would look like on their website.
 
+## Quick Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ryanjhogan7/teleperson_prototyper&env=PERPLEXITY_API_KEY,LANGFUSE_PUBLIC_KEY,LANGFUSE_SECRET_KEY&envDescription=API%20keys%20required%20for%20Perplexity%20and%20Langfuse&project-name=teleperson-prototype-generator&repository-name=teleperson-prototype-generator)
+
+Click the button above to deploy to Vercel. You'll be prompted to add your API keys during setup.
+
 ## Features
 
 - **Automated Research**: Uses Perplexity AI to research any company website
@@ -187,9 +193,87 @@ The project uses:
 - ESLint for code quality
 - Next.js 15 with App Router
 
+## Deployment to Vercel
+
+This application is optimized for deployment on Vercel, which provides seamless hosting for Next.js applications.
+
+### Deploy to Vercel
+
+1. **Push your code to GitHub** (if not already done):
+```bash
+git push origin claude/teleperson-prototype-generator-CrWos
+```
+
+2. **Import to Vercel**:
+   - Go to [vercel.com](https://vercel.com) and sign in
+   - Click "Add New Project"
+   - Import your GitHub repository
+   - Vercel will automatically detect it's a Next.js project
+
+3. **Configure Environment Variables**:
+
+   Before deploying, add your API keys in the Vercel dashboard:
+
+   - In your project settings, go to **Settings** → **Environment Variables**
+   - Add the following variables:
+
+   | Name | Value | Environment |
+   |------|-------|-------------|
+   | `PERPLEXITY_API_KEY` | Your Perplexity API key | Production, Preview, Development |
+   | `LANGFUSE_PUBLIC_KEY` | Your Langfuse public key | Production, Preview, Development |
+   | `LANGFUSE_SECRET_KEY` | Your Langfuse secret key | Production, Preview, Development |
+
+4. **Deploy**:
+   - Click "Deploy"
+   - Vercel will build and deploy your application
+   - You'll get a live URL (e.g., `your-app.vercel.app`)
+
+### Updating Environment Variables
+
+To update environment variables after deployment:
+
+1. Go to your project in Vercel dashboard
+2. Navigate to **Settings** → **Environment Variables**
+3. Edit or add new variables
+4. **Important**: Redeploy your application for changes to take effect
+   - Go to **Deployments** tab
+   - Click the three dots on the latest deployment
+   - Select "Redeploy"
+
+### Custom Domain (Optional)
+
+To add a custom domain:
+
+1. Go to **Settings** → **Domains**
+2. Add your domain
+3. Follow Vercel's DNS configuration instructions
+
+### Vercel Deployment Features
+
+- **Automatic deployments**: Every push to your branch triggers a new deployment
+- **Preview deployments**: Pull requests get their own preview URLs
+- **Instant rollbacks**: Easily revert to previous deployments
+- **Edge network**: Global CDN for fast loading worldwide
+- **Serverless functions**: API routes run as serverless functions
+
+### Important Notes for Vercel Deployment
+
+**Prototype Storage**: On Vercel, prototypes are stored in the `/tmp` directory, which is ephemeral. This means:
+- Prototypes are stored temporarily during the serverless function execution
+- Each deployment/restart will clear the `/tmp` directory
+- Prototypes will persist for the duration of the function's lifecycle (typically several minutes to hours)
+- For production use, consider integrating a persistent storage solution like:
+  - Vercel Blob Storage
+  - AWS S3
+  - Cloudflare R2
+  - Database with HTML storage
+
+The application automatically detects when running on Vercel and uses the appropriate storage location.
+
 ## Notes
 
-- Prototypes are saved as static HTML files in the `/prototypes` directory
+- **Local Development**: Prototypes are saved as static HTML files in the `/prototypes` directory
+- **Vercel Deployment**: Prototypes are saved to `/tmp` (ephemeral storage)
 - No database required - this is an internal demo tool
 - No authentication - designed for internal use
 - Conversation history is maintained client-side during each session

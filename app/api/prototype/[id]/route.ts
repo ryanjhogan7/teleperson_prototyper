@@ -19,7 +19,9 @@ export async function GET(
     // Sanitize the ID to prevent directory traversal
     const sanitizedId = id.replace(/[^a-z0-9-]/gi, '');
 
-    const prototypeDir = path.join(process.cwd(), 'prototypes');
+    // Use /tmp for Vercel serverless environment, otherwise use local prototypes directory
+    const isVercel = process.env.VERCEL === '1';
+    const prototypeDir = isVercel ? '/tmp/prototypes' : path.join(process.cwd(), 'prototypes');
     const prototypeFilePath = path.join(prototypeDir, `${sanitizedId}.html`);
 
     // Read the HTML file

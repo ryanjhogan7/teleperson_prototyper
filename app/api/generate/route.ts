@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { researchCompanyAndGeneratePrompt } from '@/lib/perplexity';
 import { createPrompt } from '@/lib/langfuse';
 import { generatePrototypeHTML, slugify } from '@/lib/utils';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
 export async function POST(request: NextRequest) {
@@ -59,9 +59,14 @@ export async function POST(request: NextRequest) {
     });
 
     // Step 5: Save HTML file
-    const prototypeDir = path.join(process.cwd(), 'prototypes');
-    const prototypeFilePath = path.join(prototypeDir, `${slug}.html`);
+    // Use /tmp for Vercel serverless environment, otherwise use local prototypes directory
+    const isVercel = process.env.VERCEL === '1';
+    const prototypeDir = isVercel ? '/tmp/prototypes' : path.join(process.cwd(), 'prototypes');
 
+    // Ensure directory exists
+    await mkdir(prototypeDir, { recursive: true });
+
+    const prototypeFilePath = path.join(prototypeDir, `${slug}.html`);
     await writeFile(prototypeFilePath, html, 'utf-8');
 
     console.log('Prototype HTML saved:', prototypeFilePath);
