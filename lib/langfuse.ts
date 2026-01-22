@@ -1,4 +1,4 @@
-const LANGFUSE_HOST = 'https://cloud.langfuse.com';
+const LANGFUSE_HOST = 'https://us.cloud.langfuse.com';
 
 export interface LangfusePromptData {
   companyName: string;
@@ -18,7 +18,7 @@ function validateLangfuseCredentials() {
       !process.env.LANGFUSE_SECRET_KEY ||
       process.env.LANGFUSE_PUBLIC_KEY === 'your_langfuse_public_key_here' ||
       process.env.LANGFUSE_SECRET_KEY === 'your_langfuse_secret_key_here') {
-    throw new Error('Langfuse credentials are not configured. Please add LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY to your .env file. Get them from https://cloud.langfuse.com → Settings → API Keys');
+    throw new Error('Langfuse credentials are not configured. Please add LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY to your .env file. Get them from https://us.cloud.langfuse.com → Settings → API Keys');
   }
 }
 
@@ -54,7 +54,7 @@ export async function createPrompt(data: LangfusePromptData): Promise<any> {
     console.error('Langfuse API error (createPrompt):', res.status, error);
 
     if (res.status === 401 || res.status === 403) {
-      throw new Error(`Invalid Langfuse credentials. Please check your LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in .env file. Get them from https://cloud.langfuse.com → Settings → API Keys. Error: ${error}`);
+      throw new Error(`Invalid Langfuse credentials. Please check your LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in .env file. Get them from https://us.cloud.langfuse.com → Settings → API Keys. Error: ${error}`);
     } else if (res.status === 409) {
       console.log('Prompt already exists, this is expected');
       // Prompt already exists, which is fine
@@ -89,7 +89,7 @@ export async function getPrompt(name: string): Promise<LangfusePromptResponse> {
     console.error('Langfuse API error (getPrompt):', res.status, error);
 
     if (res.status === 401 || res.status === 403) {
-      throw new Error(`Invalid Langfuse credentials. Please check your LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in .env file. Get them from https://cloud.langfuse.com → Settings → API Keys. Error: ${error}`);
+      throw new Error(`Invalid Langfuse credentials. Please check your LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in .env file. Get them from https://us.cloud.langfuse.com → Settings → API Keys. Error: ${error}`);
     } else if (res.status === 404) {
       throw new Error(`Prompt "${name}" not found in Langfuse. Make sure you've generated a prototype for this company first.`);
     }
